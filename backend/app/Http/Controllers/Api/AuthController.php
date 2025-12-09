@@ -11,19 +11,28 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        // 1️⃣ Validate request
         $data = $request->validate([
-            'name'=>'required|string|max:255',
-            'email'=>'required|email|unique:users',
-            'password'=>'required|min:6|confirmed'
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:6|confirmed'
         ]);
 
-        User::create([
-            'name'=>$data['name'],
-            'email'=>$data['email'],
-            'password'=>Hash::make($data['password']),
+        // 2️⃣ Create user
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
         ]);
 
-        return response()->json(['message'=>'Registered successfully'], 201);
+        // 3️⃣ Create token for API auth
+        $token = $user->createToken('task-token')->plainTextToken;
+
+        // 4️⃣ Return JSON response
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ]);
     }
 
      public function login(Request $request)
